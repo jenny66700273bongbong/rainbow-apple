@@ -743,11 +743,22 @@ function finish(){
 
 /* ===== 발음 듣기 ===== */
 function speak(text){
+  if(!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined'){
+    alert('🔊 "'+text+'"');
+    return;
+  }
+  try{ speechSynthesis.cancel(); }catch(e){}
+
   try{
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang='en-US';u.rate=0.85;
-    speechSynthesis.cancel();speechSynthesis.speak(u);
-  }catch(e){alert('🔊 "'+text+'"');}
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 0.85;
+    // 목소리를 특정 voice 객체로 강제 지정하지 않음 (기기별로 무효한 참조라 오류가 날 수 있어
+    // lang만 지정하고 브라우저 기본 매칭에 맡김)
+    speechSynthesis.speak(u);
+  }catch(e){
+    alert('🔊 "'+text+'"');
+  }
 }
 </script>
 </body>
