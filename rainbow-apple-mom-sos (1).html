@@ -742,33 +742,23 @@ function finish(){
 }
 
 /* ===== 발음 듣기 ===== */
-let voicesReady = false;
-let englishVoice = null;
-
-function loadVoices(){
-  const voices = speechSynthesis.getVoices();
-  if(voices && voices.length){
-    voicesReady = true;
-    englishVoice = voices.find(v => v.lang === 'en-US')
-                || voices.find(v => v.lang && v.lang.startsWith('en'))
-                || voices[0];
-  }
-}
-loadVoices();
-if('onvoiceschanged' in speechSynthesis){
-  speechSynthesis.onvoiceschanged = loadVoices;
-}
-
 function speak(text){
+  if(!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined'){
+    alert('🔊 "'+text+'"');
+    return;
+  }
+  try{ speechSynthesis.cancel(); }catch(e){}
+
   try{
-    if(!voicesReady){ loadVoices(); }
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang='en-US'; u.rate=0.85;
-    if(englishVoice){ u.voice = englishVoice; }
-    speechSynthesis.cancel();
-    // 모바일 브라우저는 cancel 직후 바로 speak하면 씹히는 경우가 있어 아주 짧게 지연
-    setTimeout(()=>{ speechSynthesis.speak(u); }, 60);
-  }catch(e){alert('🔊 "'+text+'"');}
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = 0.85;
+    // 목소리를 특정 voice 객체로 강제 지정하지 않음 (기기별로 무효한 참조라 오류가 날 수 있어
+    // lang만 지정하고 브라우저 기본 매칭에 맡김)
+    speechSynthesis.speak(u);
+  }catch(e){
+    alert('🔊 "'+text+'"');
+  }
 }
 </script>
 </body>
