@@ -70,7 +70,8 @@ body {
 .ep-logo img { height: 32px; object-fit: contain; }
 .ep-badge { background: #3d8ff4; color: white; border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700; }
 .video-wrap { width: 100%; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.10); margin-bottom: 14px; }
-.video-wrap iframe { width: 100%; height: 200px; border: none; display: block; }
+.video-wrap { aspect-ratio: 16 / 9; background: #000; }
+.video-wrap iframe, .video-wrap #yt-player { width: 100%; height: 100%; border: 0; display: block; background: #000; }
 .target-box { width: 100%; background: white; border-radius: 12px; padding: 12px 18px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; gap: 10px; }
 .target-label { font-size: 10px; font-weight: 800; color: #e84fa0; text-transform: uppercase; letter-spacing: .05em; flex-shrink: 0; }
 .target-text { font-size: 20px; font-weight: 900; color: #222; }
@@ -86,6 +87,7 @@ body {
 
 .mic-row { display: flex; align-items: center; gap: 10px; width: 100%; }
 .mic-btn { width: 58px; height: 58px; border-radius: 50%; border: none; background: linear-gradient(135deg,#f87bb0,#f4882a); color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(248,123,176,0.35); transition: all .2s; flex-shrink: 0; }
+.mic-btn:disabled { opacity:.4; filter:grayscale(.6); cursor:not-allowed; transform:none; }
 .mic-btn:hover { transform: scale(1.06); }
 .mic-btn.recording { background: linear-gradient(135deg,#e84fa0,#c0392b); animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
@@ -118,6 +120,25 @@ body {
 .done-sub { font-size:15px; color:#888; }
 .done-stars { font-size:38px; }
 .btn-restart { background:linear-gradient(135deg,#f87bb0,#f4882a); color:white; border:none; border-radius:999px; padding:16px 44px; font-size:17px; font-weight:800; cursor:pointer; font-family:inherit; }
+/* 동의 */
+.consent-box { background:#fff8fb; border:2px solid #f0d0e0; border-radius:14px; padding:12px 14px; margin:6px 0 14px; font-size:12.5px; line-height:1.6; color:#333; text-align:left; width:100%; }
+.consent-box b { color: #e84fa0; }
+.consent-box ul { margin:6px 0 8px 18px; }
+.consent-check { display:flex; gap:8px; align-items:flex-start; font-size:13.5px; font-weight:700; margin-top:8px; cursor:pointer; }
+.consent-check input { width:20px; height:20px; margin-top:1px; flex:none; }
+.field-error { font-size: 12px; font-weight: 700; color: #d6336c; margin-top: 6px; }
+.form-msg { background:#fff0f3; border:2px solid #f3a6b8; color:#c2255c; border-radius:12px; padding:10px 12px; margin:0 0 12px; font-size:14px; font-weight:800; line-height:1.5; text-align:center; }
+.field-group input.has-error { border-color:#e03131; background:#fff5f5; }
+.stage-card { position:relative; }
+.stage-card .lock-note { display:none; background:#f1f3f5; color:#555; border-radius:10px; padding:8px 10px; margin-bottom:10px; font-size:13px; font-weight:800; text-align:center; }
+.stage-card.locked .lock-note { display:block; }
+.stage-card.locked > *:not(.lock-note):not(.stage-title) { opacity:.4; pointer-events:none; }
+.btn-back.is-off { opacity:.45; filter:grayscale(.3); }
+.btn-next.is-off { opacity:.45; filter:grayscale(.3); }
+.btn-meet.is-off { opacity:.45; filter:grayscale(.3); }
+.video-hint { background:#fff3c4; border:2px solid #f7d451; color:#7a5a00; border-radius:12px; padding:10px 12px; margin-bottom:10px; font-size:14px; font-weight:800; text-align:center; line-height:1.5; }
+.video-hint.done { background:#e9f8ee; border-color:#9bd8ae; color:#2f7a48; }
+.btn-meet:disabled { opacity:.45; cursor:not-allowed; filter:grayscale(.3); transform:none; }
 </style>
 </head>
 <body>
@@ -149,10 +170,24 @@ body {
       <input type="text" id="child-age" placeholder="예) 6세">
     </div>
     <div class="field-group">
-      <label>학부모 이메일</label>
-      <input type="email" id="parent-email" placeholder="mom@naver.com">
+      <label>보호자 전화번호</label>
+      <input type="tel" id="parent-phone" inputmode="tel" autocomplete="tel" placeholder="예) 010-1234-5678" oninput="document.getElementById('phone-error').style.display='none'">
+      <div class="field-error" id="phone-error" style="display:none;">전화번호를 정확히 입력해 주세요 (예: 010-1234-5678)</div>
     </div>
-    <button class="btn-meet" onclick="goMission()">봉봉이 만나러 가기! 🐶</button>
+    <div class="consent-box" id="consent-box">
+      <b>개인정보 수집·이용 안내 (보호자용)</b>
+      <ul>
+        <li><b>수집 항목:</b> 아이 이름, 나이, 아이의 목소리 녹음, 보호자 전화번호</li>
+        <li><b>이용 목적:</b> ① 아이의 영어 발화 분석(0주차 무료 체험)과 결과 전달 및 안내 연락 ② 분석 방법의 정확도 검증과 서비스 개선 (외부에 공개하거나 제3자에게 제공하는 경우에는 이름과 연락처를 제외하며, 필요 시 별도로 동의를 받습니다)</li>
+        <li><b>보유·이용 기간:</b> 서비스 종료 시까지 보관하며, 삭제를 요청하시면 즉시 파기합니다.</li>
+        <li><b>삭제 요청:</b> ajh7973@naver.com</li>
+      </ul>
+      녹음은 저장·분석을 위해 레인보우애플의 구글 드라이브로 전송됩니다. 화면에서 ✕로 지워도 이미 전송된 녹음은 삭제되지 않으며, 삭제는 위 연락처로 요청해 주세요. 동의하지 않으시면 이용할 수 없습니다.
+      <label class="consent-check"><input type="checkbox" id="consent-check" onclick="onConsentClick(event)">
+        <span>저는 아이의 보호자(법정대리인)이며, 위 내용을 확인하고 동의합니다.</span></label>
+    </div>
+    <div class="form-msg" id="form-msg" role="alert" style="display:none;"></div>
+    <button class="btn-meet is-off" id="btn-start" onclick="goMission()">봉봉이 만나러 가기! 🐶</button>
   </div>
 </div>
 
@@ -171,8 +206,9 @@ body {
     <div class="ep-logo"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAABQCAIAAADTD63nAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAZSklEQVR42u19aZBc1ZXmd869L/PlUpW1V6m0gDYkQDBilZBY1KhhWOyxUIcADzNmAjPhGMzYDG47ZhztibAjHI6YJhxgj6OHMGBsN4vVLRoaGiSBBRIgEGgBJKRClJDQRpVLUq1Zubx375kfNzOrSkICSUiqJW9kVGW+9+7Ll+9+75zvfufce+lAZj9AGD2Fh9n1EOSot1dG2I2nLw8VRrmUyxh4vsulDKxyKZcysMqlDKxyGQ1Fj76fJIO6LjKoP/Mlt5xAldKWo3383G+hL/VT8DkHHnahwxVYI01rIAgEABGLJQBMBIh7Ccnn3vMT2HLyVQSAiIAG32MpokW+CFwCAYRAECYQwCARWEPCID5VWgWPXYtFRBDAEkMBICsAgaTYakTFRi7dfCq2+RduOYEqpS1DPgrIoUcKFzekihSOOfJ73RahwilJCMJEJIAVYVYM88WoLLvC4y5WFGsmZaw4YBXgJEIEkkKDuoaSYoNSsd2+cMsJVCltGfTRbSMIiTM9dNyW0BlmFgK4+JywsZaYSWSYt9LIAxZZjuho1POtgImLben+iRyPOnzaON/JESIquVJLks6n80FAigW2DKyv1g8yWVJQBBCYqERlBQCNyn6uOGYJhiVLDHLMrSw3nBZKP/ogJaXnZYjJo5HwQ0dkY1gMuAEZ+D98XYOIyBBW5D7KcZ8GAlgLGdQZKAPrq2qkoguwNPAwy5mWdQZwLYdfkABE5Lp1EFhb2OC4oIX5fLYkR7Ng7skqk/cT9Gt0LC5MJBAGwUqBYxEBJLB0ZgySyRNDECkpC0ZgRFisZmLq6+kla5MVCYJiRUGY7e3vC8XoqCT9GItPVhOU6+MO+vECKikZToWggnwhQjSsrckIlBuGWxKTFbIMDSKItQGsVdpjKA8GkrXZuI08t/QP615f879+8j8bp0x6c9PaPW27uw50xFj198tFF8y7au5fG2sJQkxFgZeGqqojr4zCkM7p76Y6/YqNYUhEeaFkMl2dyOQ45iVTKXBs3mUXrf63Z9e8tapnU77lwKfRhDdz4gTdm8v00pSJM6yxXHCOoev8WSf8loE1toGFPIkIKQLSmfUrlr29+s/Zfe0VGZNKJGLTp0xacPXsuZc3jZuw9J+ePffKiydNnRKviGV7M1Ve7TdvvaWupjkfhKS0ZqEieWLwSE/rpQOZz0YWx4JlX/t+xCcQLLHrfDt5FPb061gC5ES0WJXP/ev/eWDbqpfnX3tVE3l9730UhdredXC/lokXnffOJx81nzM5Ek980rqDWM276sorr7uusnkqoHNhKNqzNvCZ2MUMRDtDOOD6CQIxsOlsX14CoEguhyvHKgPrKwBWaIyn1LtLn1716/97+6231E8Z//HKP+d2tyMUhDntYVeu58O2fZNnzPApIr2BGOQ9nfc9/+xJV95626TL52WNFdaK4MG64CAIIDuQMl8G1lgDFgBjQhb7++/fl9i56+r5l3245V0VmEjWWEsxgpfL5iIq8FQuH0ZJ+1AkKoBkYTtg9hh7w/1/O+OGmwMRIdLFZheAYEtRwhEHrHKi38l3CoWVyh/4i+7uqSbVsfH9SFc6kQ0SGVsRkA0po2IQ38vqJHzPKGvE2JDDoMLYqexNY/Xao7/r27tXEZVUVBn+OtUwBhYf/TUceauIWGvliLQCS5QTE62s8qPxbJhPh3kfiOQtEYUuuYGNQWCUCdkEyuSVDZU1WgIyyGWrI96hA207WrYwYMVlRQjB8kkFEuiYtxdli3WGkVSCkXtvrT0SWy5BBvFk3ayZXfk8WdKGQ6aMh7xnhUQJaWFloQ15hjwDHUIb8oQ1aQmJLXFoDmsMO8Kbpgysz/Nu1qIUhykWZtZaK6WIaDC8GNBCAC76xk256lRfXkQ8SzBarIQCWPKEFEgRmImZNJMiZmHOsm7r7U/VNEw+70IR0YUoQkF1kDKwRpOVAsDMAA4dOtTZ2engxcy7du3atGnTtm3bDh06xMwOc44QMTgIw9SUmZffcdu2XDodiwGRaB7xEEqsUTZka8kKW0s2pDD0kGPpg+xn7DLhJTfdlJw4UYwtdUIIRGWBdNRYKdfPCsNwxYoVLS0txphMJlNdXb148eLnnnuus7Nz2rRp2Wy2vb29ubn5lltuSSaT1loRMJgtWxNe8I1FrXt2vfUvL8xL1VdnFNswD6uswFoSC8AArFROkAf35LNbTWb6166/7D/dbqw1zETEhawyoeMadTEMO/ZnTm44UWN5auQGZ37S6fSvfvWrurq6RYsWNTQ0ANiyZUsymezp6bnwwgtLBy9dunTz5s33339/ZWWlCBQpEghsqEQjfOWRR7c/uWyK6Lq4r2C0CUUMgSwjZNUVBmmhv/SmI3XVM27/mzm33244YolDgcekXRxdGDgZgfTM27sysIYA6ze/+U1tbe03v/nN9vb2FStWZLPZ6dOnz58/f/369e+8844jWDfffPPkyZOXLl3a3t5+7733uooEkmKevWLeseqVNU890bdj1wQ/Fg9CZjJi+4JcZxD0R6KRpqaZ86+67KYbk5OnGBsAKrRgglZMCAGCy3PACAaW+tHf/e2ZU0FPDAKkWWulCQShYtpMcd8JnVZEiGjnzp2rV6/+3ve+19LS8utf//qSSy6ZNWvW7t27a2pq2traZs+ePX/+fM/zfve7302fPn3evHnLly+fNGlSbW1taAJDxIqUJbIwYuqmTrvwugUmHn359deDZPKgpzo0x2dMm3jVlect+g8L/+vd06/+K1tdbcNACZGwImIQsxu4Q4LBqKFBT44EYd6g0LcYzsDSpxg6I4MfOGDt2LFj8uTJzPzEE0/cfvvtl112GYBzzz0XwPjx492R8+bN6+3tffbZZ3/wgx80NTV9+umnU6dO1ayJGQAUwGDhIAy9WNVnOj7/v/+P62+80QZ50iqWTLKOuPMYK5qgtEeH86jBeQ2H3T0aIPU0/FKxh6YzlXuFAyWfzycSiWw2y8wzZ840xvT19fX19YmIMaa7u7uzs9NaO2vWrPb2dgCxWCydThdafKDxyVrraZ1Op9/bvGXh174WT6WSdfWJqhrWEaeEQUQx6ZLNoeN9XMtyw4gqqVTq0KFDvu8zc29vLxE99dRTK1ascB3GJ5988umnn3bqw0cfffT44493dHQkEokSPzusdHR0VCaTfjTq1FUUhQxmBtGov5llYBX8IICmpqaDBw+uXLlyw4YNGzduZOYlS5Zcd911SilmvuOOO+644w4iWrly5de//vUbbrjBGBONRgdz/4IzU8r9tcWB2USEku41NgqPcUgNjts0NjaKSCqV+vnPf7569eqNGzdWVVX19fU9++yzTz75ZFtbW2Vl5UsvvdTS0rJkyZKmpqZYLBaPxwefx1prjHEnTKVSuVwum80O9pJj597qsYyqUns7TCSTyWQyGY1GL7zwwnvuuef3v//91q1br7766sbGRgDxePy3v/1tR0fHD3/4w1Qq5RiY7/vW2iAIPM+z1iqlHMKMMb7va61zuVxFRUXJKJYt1ugvg+OAznOJSF1dXWtrq7V28uTJP/nJT2pra5944okDBw7k8/nHHnusubn5xz/+cW1trTGGmY0xzks+9dRTLS0tWmu33fGwrq4uEamoqBhrtqrsCgvtLSJdXV3vvPOOY9b9/f3MnMvliOjGG2/8/ve/v2PHjueff/6ee+65+eabnW1zdc8999xnnnnmtdde27ZtW21trQtUi0gYhsy8Zs2a888/PxqNjilq9VUBi05/WhU5ug2CgPmkvqIEEd/3165d++CDD+7Zs2fBggUiorUGkM1m4/H4FVdc0dzcXFdXl8vlrLUuRG2tXbRo0aWXXtra2vrd7363qqrKwZSIIpHI5s2bW1tbFy5c6L5itLAHOtbrsGY6uZDOGZBAyXJERePROARMPGg853GHdJyqpLXeunVre3t7XV3dxIkTq6qqnEdzGEqn0w899NCePXsWLVrkeoKD/ZoD2fLly0XkkksuaWhoCMPw1Vdf3bBhw5133jlu3LivgF0NpCbDFkI6edCZ8DbHM6JzrGc3uHyY/fv3t7W1zZw5s6qqyvGtMAyd1Pnggw+ed95599577y9/+cvu7u7bbrvN7XJcCsD27dtzuVx7e3s8Hm9tbd20aVN9ff19993n+74D6BilGWPcYjFzR0fH2rVr6+vr0+n0xo0bZ8+effHFF9fX14vIL37xi6lTp952220AMpnMAw880Nzc/O1vf9tV37p166pVqzKZzJIlS9avX19ZWdnU1DR+/Pja2tqSny1ZtbFmscYusBwNd2LmypUrKysrL7/88t27d69bt27Xrl3Tpk37+OOPx40bd+eddzoy7iDy0EMPRSKROXPmrF69GsDcuXPnzp3rbFtvb28q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" alt="Rainbow Apple"></div>
     <div class="ep-badge" id="ep-badge">Level 1 · EP 1</div>
   </div>
+  <div class="video-hint" id="video-hint">👆 먼저 아래 영상의 ▶ 재생 버튼을 눌러서 끝까지 봐요! 다 보면 아래 활동이 열려요.</div>
   <div class="video-wrap">
-    <iframe id="ep-video" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <div id="yt-player"></div>
   </div>
   <div class="target-box">
     <span class="target-label">목표 문장</span>
@@ -182,6 +218,7 @@ body {
   <!-- 모방 발화 -->
   <div class="stage-card">
     <div class="stage-title">🔊 1단계 · 모방 발화</div>
+    <div class="lock-note">🔒 영상을 끝까지 보면 열려요</div>
     <div class="stage-desc">봉봉이 선생님 목소리를 듣고 따라 말해봐요!</div>
     <button class="voice-btn" id="play-model" onclick="playVoice('model')">🔊 선생님 목소리 듣기</button>
     <div class="mic-row">
@@ -190,7 +227,7 @@ body {
     </div>
     <div class="playback-row" id="playback-model" style="display:none;">
       <button class="btn-play" onclick="playLatest('model')">▶ 재생</button>
-      <button class="btn-save" onclick="saveRec('model')">💾 저장</button>
+      <button class="btn-save" onclick="saveClick('model')">💾 저장</button>
     </div>
     <div class="saved-list" id="saved-model"></div>
   </div>
@@ -198,6 +235,7 @@ body {
   <!-- 자율 발화 -->
   <div class="stage-card">
     <div class="stage-title">🌟 2단계 · 자율 발화</div>
+    <div class="lock-note">🔒 영상을 끝까지 보면 열려요</div>
     <div class="stage-desc">이번엔 혼자서 말해봐요!</div>
     <button class="voice-btn" id="play-free" onclick="playVoice('free')">🔊 힌트 듣기</button>
     <div class="mic-row">
@@ -206,14 +244,15 @@ body {
     </div>
     <div class="playback-row" id="playback-free" style="display:none;">
       <button class="btn-play" onclick="playLatest('free')">▶ 재생</button>
-      <button class="btn-save" onclick="saveRec('free')">💾 저장</button>
+      <button class="btn-save" onclick="saveClick('free')">💾 저장</button>
     </div>
     <div class="saved-list" id="saved-free"></div>
   </div>
 
+  <div class="form-msg" id="ep-msg" role="alert" style="display:none;"></div>
   <div class="row-btns">
-    <button class="btn-back" onclick="show('mission'); renderMission()">← 미션 목록</button>
-    <button class="btn-next" onclick="completeEp()">✅ 완료!</button>
+    <button class="btn-back is-off" id="btn-back" onclick="goBack()">← 미션 목록</button>
+    <button class="btn-next is-off" id="btn-next" onclick="completeEp()">✅ 완료!</button>
   </div>
 </div>
 
@@ -249,7 +288,59 @@ const episodes = [
 ];
 
 let childName = '';
+const CONSENT_VERSION = 'free0-v2';
+let parentPhone = '';
+let consentAt = '';
+function normalizePhone(raw) {
+  const d = String(raw || '').replace(/\D/g, '');
+  if (!/^01[016789]\d{7,8}$/.test(d)) return '';
+  return d.length === 11 ? d.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')
+                         : d.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+}
 let doneEps = [false, false, false];
+let videoWatched = [false, false, false];
+let voiceHeard = [{model:false,free:false},{model:false,free:false},{model:false,free:false}];
+let maxPlayed = 0;
+function updateStageLocks() {
+  var watched = videoWatched[currentEp];
+  var modelSaved = recordings.model[currentEp].length > 0;
+  var locks = [!watched, !watched || !modelSaved];
+  document.querySelectorAll('#ep-screen .stage-card').forEach(function(c, i){
+    c.classList.toggle('locked', locks[i]);
+    c.querySelectorAll('button').forEach(function(btn){ btn.disabled = locks[i]; });
+    var note = c.querySelector('.lock-note');
+    if (note) note.textContent = (i === 1 && watched) ? '🔒 1단계 녹음을 저장하면 열려요' : '🔒 영상을 끝까지 보면 열려요';
+  });
+  ['model','free'].forEach(function(t, i){
+    var mic = document.getElementById('mic-' + t), st = document.getElementById('status-' + t);
+    if (locks[i]) return;
+    if (!voiceHeard[currentEp][t]) {
+      mic.disabled = true;
+      st.textContent = t === 'model' ? '🔒 먼저 선생님 목소리를 끝까지 들어요' : '🔒 먼저 힌트를 끝까지 들어요';
+      st.className = 'mic-status';
+    } else {
+      mic.disabled = false;
+      if (st.textContent.indexOf('🔒') === 0) st.textContent = '이제 녹음해봐요! 🎤';
+    }
+  });
+  var nb = document.getElementById('btn-next');
+  var freeSaved = recordings.free[currentEp].length > 0;
+  var bb = document.getElementById('btn-back');
+  if (bb) bb.classList.toggle('is-off', !(watched && modelSaved && freeSaved) && !micFailed);
+  if (nb) nb.classList.toggle('is-off', !(watched && modelSaved && freeSaved));   // 영상 + 1단계 + 2단계를 모두 마쳐야 완료
+  var em = document.getElementById('ep-msg'); if (em) em.style.display = 'none';
+}
+function setVideoHint(text, done) {
+  var h = document.getElementById('video-hint');
+  h.className = 'video-hint' + (done ? ' done' : '');
+  h.textContent = text;
+}
+function applyVideoLock(idx) {
+  maxPlayed = 0;
+  var em0 = document.getElementById('ep-msg'); if (em0) em0.style.display = 'none';
+  updateStageLocks();
+  if (videoWatched[idx]) setVideoHint('✅ 영상을 다 봤어요! 다시 보고 싶으면 ▶ 를 눌러요.', true);
+}
 let currentEp = 0;
 let recordings = { model: [[],[],[]], free: [[],[],[]] };
 let currentBlob = { model: null, free: null };
@@ -257,13 +348,146 @@ let mediaRecorder = { model: null, free: null };
 let audioChunks = { model: [], free: [] };
 let isRecording = { model: false, free: false };
 let currentAudio = null;
+const MIN_REC_MS = 1000;            // 최소 녹음 시간(1초)
+let micFailed = false;   // 마이크 권한 오류 시 아이가 갇히지 않게 나가기를 허용
+let recStart = { model: 0, free: 0 };
+let recDur = { model: 0, free: 0 };
 
 function show(id) {
+  if (id !== 'ep-screen') { try { if (ytPlayer && ytReady) ytPlayer.pauseVideo(); } catch(e) {} }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
+function missingField() {
+  if (document.getElementById('child-name').value.trim() === '')
+    return { id: 'child-name', msg: '아이 이름을 입력해 주세요.' };
+  if (document.getElementById('child-age').value.trim() === '')
+    return { id: 'child-age', msg: '아이 나이를 입력해 주세요. (예: 6세)' };
+  var ph = document.getElementById('parent-phone').value.trim();
+  if (ph === '') return { id: 'parent-phone', msg: '보호자 전화번호를 입력해 주세요. (예: 010-1234-5678)' };
+  if (normalizePhone(ph) === '') return { id: 'parent-phone', msg: '보호자 전화번호를 정확히 확인해 주세요. (예: 010-1234-5678)' };
+  return null;
+}
+function clearFormMsg() {
+  document.getElementById('form-msg').style.display = 'none';
+  ['child-name','child-age','parent-phone'].forEach(function(id){ document.getElementById(id).classList.remove('has-error'); });
+}
+function showFormMsg(msg, fieldId) {
+  clearFormMsg();
+  var box = document.getElementById('form-msg');
+  box.textContent = '⚠️ ' + msg;
+  box.style.display = 'block';
+  if (fieldId) {
+    var f = document.getElementById(fieldId);
+    f.classList.add('has-error');
+  }
+  box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+function updateConsentGate() {
+  var chk = document.getElementById('consent-check');
+  if (missingField()) chk.checked = false;   // 입력이 비면 동의 체크를 풀어 준다
+  document.getElementById('btn-start').classList.toggle('is-off', !chk.checked);
+}
+function onConsentClick(e) {
+  var m = missingField();
+  if (m) {
+    e.target.checked = false;
+    showFormMsg(m.msg, m.id);
+  } else {
+    clearFormMsg();
+  }
+  updateConsentGate();
+}
+['child-name','child-age','parent-phone'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', function(){ clearFormMsg(); updateConsentGate(); });
+});
+var ytPlayer = null, ytReady = false, ytPendingId = null, ytPoll = null, ytTimeout = null, ytApiRequested = false;
+function ytUnlock(msg) {
+  if (videoWatched[currentEp]) return;
+  videoWatched[currentEp] = true;   // 영상을 못 불러오면 아이가 막히지 않게 연다
+  updateStageLocks();
+  setVideoHint(msg, false);
+}
+function ytStopPoll() { if (ytPoll) { clearInterval(ytPoll); ytPoll = null; } }
+function ytStartPoll() {
+  ytStopPoll();
+  ytPoll = setInterval(function(){
+    if (!ytPlayer || !ytReady || videoWatched[currentEp]) return;
+    var t = 0;
+    try { t = ytPlayer.getCurrentTime(); } catch(e) { return; }
+    if (t > maxPlayed + 3) { try { ytPlayer.seekTo(maxPlayed, true); } catch(e) {} }   // 건너뛰기 방지
+    else if (t > maxPlayed) maxPlayed = t;
+  }, 400);
+}
+function ytCreate() {
+  if (ytPlayer || !(window.YT && YT.Player)) return;
+  ytPlayer = new YT.Player('yt-player', {
+    videoId: ytPendingId,
+    playerVars: { rel: 0, modestbranding: 1, playsinline: 1, disablekb: 1, iv_load_policy: 3 },
+    events: {
+      onReady: function(){
+        ytReady = true;
+        clearTimeout(ytTimeout);
+        ytStartPoll();
+      },
+      onStateChange: function(e){
+        if (e.data === 1 && !videoWatched[currentEp]) {
+          setVideoHint('👍 영상을 끝까지 보면 아래 활동이 열려요!', false);
+        }
+        if (e.data === 0 && !videoWatched[currentEp]) {
+          var dur = 0;
+          try { dur = ytPlayer.getDuration() || 0; } catch(err) {}
+          if (dur && maxPlayed < dur - 3) {   // 끝으로 건너뛴 경우
+            try { ytPlayer.seekTo(maxPlayed, true); ytPlayer.pauseVideo(); } catch(err) {}
+            setVideoHint('영상을 처음부터 끝까지 봐야 해요! 건너뛰지 말고 봐요 🙂', false);
+            return;
+          }
+          videoWatched[currentEp] = true;
+          updateStageLocks();
+          setVideoHint('✅ 잘 봤어요! 이제 아래에서 선생님 목소리를 듣고 따라 말해봐요.', true);
+        }
+      },
+      onError: function(){
+        ytUnlock('영상을 불러오지 못했어요. 아래 활동을 바로 해 볼 수 있어요.');
+      }
+    }
+  });
+}
+window.onYouTubeIframeAPIReady = ytCreate;
+function loadEpVideo(idx) {
+  var id = episodes[idx].videoId;
+  maxPlayed = 0;
+  ytPendingId = id;
+  if (ytReady) {
+    try { ytPlayer.cueVideoById(id); } catch(e) {}
+    ytStartPoll();
+  } else if (window.YT && YT.Player) {
+    ytCreate();
+  } else if (!ytApiRequested) {
+    ytApiRequested = true;
+    var tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.onerror = function(){ ytUnlock('영상을 불러오지 못했어요. 아래 활동을 바로 해 볼 수 있어요.'); };
+    document.head.appendChild(tag);
+  }
+  clearTimeout(ytTimeout);
+  ytTimeout = setTimeout(function(){
+    if (!ytReady) ytUnlock('영상을 불러오지 못했어요. 아래 활동을 바로 해 볼 수 있어요.');
+  }, 12000);
+}
+
 function goMission() {
+  var m = missingField();
+  if (m) { showFormMsg(m.msg, m.id); return; }
+  if (!document.getElementById('consent-check').checked) {
+    showFormMsg('개인정보 수집·이용 안내를 확인하고 동의에 체크해 주세요.', null);
+    return;
+  }
+  clearFormMsg();
+  const phone = normalizePhone(document.getElementById('parent-phone').value);
+  parentPhone = phone;
+  consentAt = new Date().toISOString();
   childName = document.getElementById('child-name').value.trim() || '친구';
   renderMission();
   show('mission');
@@ -296,7 +520,7 @@ function goEp(idx) {
   const ep = episodes[idx];
 
   document.getElementById('ep-badge').textContent = 'Level 1 · ' + ep.label;
-  document.getElementById('ep-video').src = 'https://www.youtube.com/embed/' + ep.videoId;
+  (function(){ var h = document.getElementById('video-hint'); h.className = 'video-hint'; h.textContent = '👆 먼저 아래 영상의 ▶ 재생 버튼을 눌러서 끝까지 봐요! 다 보면 아래 활동이 열려요.'; })();
   document.getElementById('target-text').textContent = ep.sentence;
 
   ['model','free'].forEach(t => {
@@ -307,7 +531,9 @@ function goEp(idx) {
     document.getElementById('playback-' + t).style.display = 'none';
     renderSavedList(t);
   });
+  applyVideoLock(idx);
   show('ep-screen');
+  loadEpVideo(idx);
 }
 
 function playVoice(type) {
@@ -319,11 +545,15 @@ function playVoice(type) {
   const btn = document.getElementById('play-' + type);
   btn.textContent = '🔊 재생 중...';
   btn.disabled = true;
-  currentAudio.onended = () => {
+  const finishVoice = () => {
     btn.textContent = type === 'model' ? '🔊 선생님 목소리 듣기' : '🔊 힌트 듣기';
     btn.disabled = false;
     document.getElementById('status-' + type).textContent = '이제 녹음해봐요! 🎤';
+    voiceHeard[currentEp][type] = true;   // 끝까지 들어야 마이크가 열린다
+    updateStageLocks();
   };
+  currentAudio.onended = finishVoice;
+  currentAudio.onerror = finishVoice;      // 소리를 못 불러오면 아이가 막히지 않게 연다
 }
 
 async function toggleRecord(type) {
@@ -339,20 +569,28 @@ async function startRecording(type) {
     mediaRecorder[type].onstop = () => {
       currentBlob[type] = new Blob(audioChunks[type], { type: 'audio/webm' });
       document.getElementById('playback-' + type).style.display = 'flex';
+      var pb = document.querySelector('#playback-' + type + ' .btn-play'); if (pb) pb.style.display = '';
       stream.getTracks().forEach(t => t.stop());
     };
     mediaRecorder[type].start();
+    recStart[type] = Date.now();
+    recDur[type] = 0;
     isRecording[type] = true;
     document.getElementById('mic-' + type).className = 'mic-btn recording';
     document.getElementById('mic-' + type).textContent = '⏹';
-    document.getElementById('status-' + type).textContent = '🔴 녹음 중...';
+    document.getElementById('status-' + type).textContent = '🔴 녹음 중... 다 말했으면 아래 💾 저장을 눌러요';
     document.getElementById('status-' + type).className = 'mic-status rec';
+    document.getElementById('playback-' + type).style.display = 'flex';   // 녹음 중에도 저장을 바로 누를 수 있게
+    var pb0 = document.querySelector('#playback-' + type + ' .btn-play'); if (pb0) pb0.style.display = 'none';
   } catch(e) {
+    micFailed = true;
     document.getElementById('status-' + type).textContent = '⚠️ 마이크 권한이 필요합니다';
+    updateStageLocks();
   }
 }
 
 function stopRecording(type) {
+  if (isRecording[type]) recDur[type] = Date.now() - recStart[type];
   if (mediaRecorder[type]) mediaRecorder[type].stop();
   isRecording[type] = false;
   document.getElementById('mic-' + type).className = 'mic-btn';
@@ -361,17 +599,46 @@ function stopRecording(type) {
   document.getElementById('status-' + type).className = 'mic-status';
 }
 
+// 녹음 중에 저장을 눌러도 녹음을 멈추고 바로 저장·전송한다
+async function saveClick(type) {
+  if (isRecording[type]) {
+    if (Date.now() - recStart[type] < MIN_REC_MS) {   // 너무 빨리 눌렀으면 계속 녹음
+      var st = document.getElementById('status-' + type);
+      st.textContent = '⚠️ 1초 이상 말해야 저장돼요! 계속 말해봐요 🎤';
+      setTimeout(function(){
+        if (isRecording[type]) st.textContent = '🔴 녹음 중... 다 말했으면 아래 💾 저장을 눌러요';
+      }, 1500);
+      return;
+    }
+    await new Promise(function(resolve){
+      var mr = mediaRecorder[type], prev = mr.onstop;
+      mr.onstop = function(){ if (prev) prev.call(mr); resolve(); };
+      stopRecording(type);
+    });
+  }
+  else if (currentBlob[type] && recDur[type] < MIN_REC_MS) {   // 너무 짧게 녹음하고 멈춘 경우: 버리고 다시 녹음
+    currentBlob[type] = null;
+    document.getElementById('playback-' + type).style.display = 'none';
+    var st2 = document.getElementById('status-' + type);
+    st2.textContent = '⚠️ 너무 짧아요! 마이크를 눌러 다시 녹음해 봐요 🎤';
+    st2.className = 'mic-status';
+    return;
+  }
+  saveRec(type);
+}
+
 function playLatest(type) {
   if (!currentBlob[type]) return;
   new Audio(URL.createObjectURL(currentBlob[type])).play();
 }
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby59vUcA1mn47oEAnsffShBISHoZ-wqe018tNYy-yPOw3Og0pGMZUZzETjybwyI3_CZ/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyessUXqX4eHqE9ExDAGBexpBjJFhQiRmwkvF9E-nEDZ2VffoAoaV8Ir-m4YUqQPf6OKQ/exec';
 
 function saveRec(type) {
   if (!currentBlob[type]) return;
   const blob = currentBlob[type];
   recordings[type][currentEp].push(blob);
+  updateStageLocks();
   currentBlob[type] = null;
   document.getElementById('playback-' + type).style.display = 'none';
   document.getElementById('status-' + type).textContent = '💾 드라이브에 저장 중...';
@@ -384,8 +651,13 @@ function saveRec(type) {
     const payload = {
       childName: document.getElementById('child-name').value.trim() || '이름없음',
       childAge:  document.getElementById('child-age').value.trim()  || '나이없음',
-      epLabel:   ep.label,
+      parentPhone: parentPhone,
+      kit:       'FREE0',
+      missionLabel: 'FREE0_' + ep.label,
       stage:     type,
+      consent:   'Y',
+      consentVersion: CONSENT_VERSION,
+      consentAt: consentAt,
       audio:     base64
     };
     fetch(SCRIPT_URL, {
@@ -421,10 +693,34 @@ function playRec(type, idx) {
 
 function deleteRec(type, idx) {
   recordings[type][currentEp].splice(idx, 1);
+  updateStageLocks();
   renderSavedList(type);
 }
 
+function goBack() {
+  var done = videoWatched[currentEp] && recordings.model[currentEp].length > 0 && recordings.free[currentEp].length > 0;
+  if (!done && !micFailed) {
+    var em = document.getElementById('ep-msg');
+    em.textContent = '⚠️ 영상 보기, 1단계, 2단계를 모두 마친 뒤에 나갈 수 있어요.';
+    em.style.display = 'block';
+    em.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+  show('mission'); renderMission();
+}
+
 function completeEp() {
+  var why = '';
+  if (!videoWatched[currentEp]) why = '영상을 끝까지 본 뒤에 눌러 주세요.';
+  else if (recordings.model[currentEp].length === 0) why = '1단계(모방 발화) 녹음을 저장한 뒤에 눌러 주세요.';
+  else if (recordings.free[currentEp].length === 0) why = '2단계(자율 발화) 녹음을 저장한 뒤에 눌러 주세요.';
+  if (why) {
+    var em = document.getElementById('ep-msg');
+    em.textContent = '⚠️ ' + why;
+    em.style.display = 'block';
+    em.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
   doneEps[currentEp] = true;
   if (doneEps.every(Boolean)) {
     document.getElementById('done-title').textContent = childName + '아, 모든 미션 완료!';
@@ -437,14 +733,25 @@ function completeEp() {
 
 function restart() {
   doneEps = [false, false, false];
+  micFailed = false;
+  videoWatched = [false, false, false];
+  voiceHeard = [{model:false,free:false},{model:false,free:false},{model:false,free:false}];
+  maxPlayed = 0;
   recordings = { model: [[],[],[]], free: [[],[],[]] };
   currentBlob = { model: null, free: null };
   childName = '';
   document.getElementById('child-name').value = '';
   document.getElementById('child-age').value = '';
-  document.getElementById('parent-email').value = '';
+  document.getElementById('parent-phone').value = '';
+  document.getElementById('phone-error').style.display = 'none';
+  parentPhone = '';
+  document.getElementById('consent-check').checked = false;
+  consentAt = '';
+  clearFormMsg();
+  updateConsentGate();
   show('intro');
 }
+updateConsentGate();
 </script>
 </body>
 </html>
